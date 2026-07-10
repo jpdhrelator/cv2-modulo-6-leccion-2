@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actividad · Lección 2 · Templates y Rendering (Composition API)</title>
+<style>
+  :root{
+    --bg:#0f1115; --bg2:#161a21; --card:#1b2028; --border:#2a313c;
+    --text:#e6e9ef; --muted:#9aa4b2; --green:#42b883; --green-d:#35495e;
+    --code-bg:#11151b; --warn:#ffcb6b; --hint:#8be9fd;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f5f7fa; --bg2:#eef1f5; --card:#ffffff; --border:#dce1e8;
+      --text:#1c2430; --muted:#5a6472; --code-bg:#0f1720; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);color:var(--text);line-height:1.65;font-size:16px}
+  .wrap{max-width:940px;margin:0 auto;padding:0 20px 120px}
+  header.hero{background:linear-gradient(135deg,var(--green-d),#1a2634);color:#fff;
+    padding:52px 20px 40px;text-align:center;border-bottom:3px solid var(--green)}
+  header.hero h1{margin:0 0 8px;font-size:1.9rem}
+  header.hero p{margin:6px auto;max-width:640px;color:#cfe8db}
+  .badge{display:inline-block;background:var(--green);color:#0b1a12;font-weight:700;
+    padding:4px 12px;border-radius:999px;font-size:.8rem;letter-spacing:.5px;margin-bottom:14px}
+  .meta-bar{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;margin-top:18px;font-size:.85rem}
+  .meta-bar span{background:rgba(255,255,255,.12);padding:6px 14px;border-radius:8px}
+  .intro{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:24px 26px;margin:32px 0}
+  .intro h2{margin-top:0;color:var(--green)}
+  section.act{background:var(--card);border:1px solid var(--border);border-radius:16px;
+    padding:26px 30px;margin:26px 0;box-shadow:0 2px 16px rgba(0,0,0,.15)}
+  section.act.final{border:2px solid var(--green);box-shadow:0 4px 26px rgba(66,184,131,.2)}
+  section.act h2{margin-top:0;font-size:1.4rem;display:flex;align-items:center;gap:12px}
+  .n{background:var(--green);color:#0b1a12;min-width:36px;height:36px;padding:0 6px;border-radius:10px;
+    display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:.95rem;flex:0 0 auto}
+  .n.star{background:linear-gradient(135deg,#ffcb6b,#ff9d3c)}
+  .tag-level{font-size:.7rem;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:999px;
+    text-transform:uppercase;margin-left:auto}
+  .lvl-facil{background:rgba(66,184,131,.18);color:var(--green)}
+  .lvl-medio{background:rgba(139,233,253,.15);color:var(--hint)}
+  .lvl-reto{background:rgba(255,203,107,.18);color:var(--warn)}
+  h3{color:var(--green);font-size:1.02rem;margin:22px 0 6px}
+  .goal{font-style:italic;color:var(--muted);margin:4px 0 14px}
+  ul.tasks{margin:8px 0;padding-left:0;list-style:none}
+  ul.tasks li{position:relative;padding:6px 0 6px 30px;border-bottom:1px solid var(--border)}
+  ul.tasks li:last-child{border-bottom:none}
+  ul.tasks li::before{content:"";position:absolute;left:0;top:11px;width:16px;height:16px;
+    border:2px solid var(--green);border-radius:4px}
+  code.inline{background:var(--code-bg);color:#8be9fd;padding:2px 7px;border-radius:6px;
+    font-family:"SF Mono",Menlo,Consolas,monospace;font-size:.86em}
+  pre{background:var(--code-bg);color:#e6e9ef;padding:16px 18px;border-radius:12px;overflow-x:auto;
+    font-family:"SF Mono",Menlo,Consolas,monospace;font-size:.84rem;line-height:1.55;
+    border:1px solid var(--border);margin:12px 0}
+  pre .tag{color:#ff79c6} pre .atr{color:#50fa7b} pre .val{color:#ffcb6b}
+  pre .cmt{color:#6b7686;font-style:italic} pre .kw{color:#ff79c6}
+  pre .fn{color:#8be9fd} pre .str{color:#a5d6a7} pre .num{color:#ffb86c}
+  .hint{background:rgba(139,233,253,.09);border-left:4px solid var(--hint);border-radius:10px;
+    padding:12px 16px;margin:14px 0;font-size:.92rem}
+  .hint strong{color:var(--hint)}
+  .warn-box{background:rgba(255,203,107,.12);border-left:4px solid var(--warn);border-radius:10px;
+    padding:12px 16px;margin:14px 0;font-size:.92rem}
+  .warn-box strong{color:var(--warn)}
+  details{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:2px 16px;margin:14px 0}
+  details summary{cursor:pointer;font-weight:700;color:var(--hint);padding:10px 0}
+  details summary::marker{color:var(--hint)}
+  details p,details ul{font-size:.9rem}
+  .check{background:rgba(66,184,131,.08);border:1px dashed var(--green);border-radius:12px;
+    padding:16px 20px;margin:16px 0}
+  .check h4{margin:0 0 8px;color:var(--green);font-size:.95rem}
+  .check ul{margin:0;padding-left:20px;font-size:.92rem}
+  .criteria{width:100%;border-collapse:collapse;margin:14px 0;font-size:.88rem}
+  .criteria th,.criteria td{border:1px solid var(--border);padding:9px 12px;text-align:left}
+  .criteria th{background:var(--bg2);color:var(--green)}
+  footer{text-align:center;color:var(--muted);padding:40px 20px;font-size:.9rem}
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="badge">MÓDULO 6 · LECCIÓN 2 · ACTIVIDAD</div>
+  <h1>Templates y Rendering en Vue</h1>
+  <p>Ficha de actividades para el alumno · <strong>Composition API</strong> (<code>&lt;script setup&gt;</code>)</p>
+  <div class="meta-bar">
+    <span>🕒 Duración estimada: 90–120 min</span>
+    <span>🧩 6 actividades + 1 integradora</span>
+    <span>💻 Modalidad: individual</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="intro">
+    <h2>📋 Antes de empezar — lee esto</h2>
+    <p><strong>El objetivo de esta actividad NO es entregar código perfecto.</strong> Es que te pelees con cada concepto y entiendas el <em>por qué</em>. Si copias y pegas sin entender, perdiste el tiempo. Si te trabas, primero piensa, después revisa tus apuntes, después usa las pistas, y recién al final pregunta.</p>
+    <h3 style="margin-top:18px">🛠️ Setup del proyecto</h3>
+    <ul class="tasks">
+      <li>Usa el proyecto Vite que creaste en la <strong>Lección 1</strong> (o crea uno nuevo con <code class="inline">npm create vue@latest</code>).</li>
+      <li>Crea una carpeta <code class="inline">src/components/actividades/</code> y adentro un componente <code class="inline">.vue</code> por cada actividad (ej: <code class="inline">Actividad1.vue</code>).</li>
+      <li>Importa y muestra el componente que estés trabajando desde <code class="inline">App.vue</code>.</li>
+      <li>TODOS los componentes deben usar <code class="inline">&lt;script setup&gt;</code>. Nada de Options API acá.</li>
+    </ul>
+    <div class="warn-box">
+      <strong>Regla de oro que no puedes olvidar:</strong> en el <code class="inline">&lt;script&gt;</code> accedes al valor de un <code class="inline">ref</code> con <code class="inline">.value</code>. En el <code class="inline">&lt;template&gt;</code>, NUNCA pongas <code class="inline">.value</code>. Si te da <code class="inline">[object Object]</code> o <code class="inline">undefined</code>, ese suele ser el problema.
+    </div>
+  </div>
+
+  <!-- ACTIVIDAD 1 -->
+  <section class="act">
+    <h2><span class="n">1</span> Tarjeta de perfil <span class="tag-level lvl-facil">Fácil</span></h2>
+    <p class="goal">🎯 Meta: dominar interpolaciones, <code class="inline">ref</code> y <code class="inline">v-bind</code> de atributos.</p>
+    <p>Crea un componente <code class="inline">TarjetaPerfil.vue</code> que muestre los datos de una persona (inventa los tuyos).</p>
+    <h3>Requisitos</h3>
+    <ul class="tasks">
+      <li>Declara al menos 4 datos con <code class="inline">ref</code>: <code class="inline">nombre</code>, <code class="inline">profesion</code>, <code class="inline">edad</code> y <code class="inline">urlFoto</code>.</li>
+      <li>Muestra nombre, profesión y edad usando interpolación <code class="inline">{{ }}</code>.</li>
+      <li>Muestra la foto con una etiqueta <code class="inline">&lt;img&gt;</code> enlazando el <code class="inline">src</code> de forma dinámica.</li>
+      <li>Agrega un texto que diga <em>"Mayor de edad: SÍ / NO"</em> calculado con una expresión en el template.</li>
+    </ul>
+    <div class="hint">
+      <strong>💡 Pista:</strong> los mustaches <code class="inline">{{ }}</code> NO funcionan dentro de atributos HTML. Para el <code class="inline">src</code> de la imagen necesitas otra directiva. ¿Cuál era la de atributos? Para el "mayor de edad", piensa en un operador ternario.
+    </div>
+    <details>
+      <summary>Ver pista extra (solo si te trabaste de verdad)</summary>
+      <p>El atributo dinámico se hace con <code class="inline">:src="urlFoto"</code> (forma abreviada de <code class="inline">v-bind:src</code>). Para la mayoría de edad: <code class="inline">{{ edad >= 18 ? 'SÍ' : 'NO' }}</code>. Puedes usar <code class="inline">https://i.pravatar.cc/150</code> como foto de prueba.</p>
+    </details>
+  </section>
+
+  <!-- ACTIVIDAD 2 -->
+  <section class="act">
+    <h2><span class="n">2</span> Contador con reglas <span class="tag-level lvl-facil">Fácil</span></h2>
+    <p class="goal">🎯 Meta: eventos con <code class="inline">@click</code>, funciones manejadoras y renderización condicional.</p>
+    <p>Crea <code class="inline">ContadorReglas.vue</code>: un contador que arranca en 0 con botones para sumar, restar y resetear.</p>
+    <h3>Requisitos</h3>
+    <ul class="tasks">
+      <li>Un <code class="inline">ref</code> <code class="inline">contador</code> iniciado en 0.</li>
+      <li>Tres botones: <strong>+1</strong>, <strong>−1</strong> y <strong>Reset</strong>, cada uno con su función manejadora.</li>
+      <li>El contador NO puede bajar de 0 (si está en 0, restar no hace nada).</li>
+      <li>Muestra un mensaje con <code class="inline">v-if</code>/<code class="inline">v-else-if</code>/<code class="inline">v-else</code>: "En cero" (0), "Vas bien" (1–9), "¡Nivel experto!" (10+).</li>
+    </ul>
+    <div class="hint">
+      <strong>💡 Pista:</strong> en Composition API una "función manejadora" es una <code class="inline">function</code> normal en el <code class="inline">&lt;script setup&gt;</code>. Recuerda el <code class="inline">.value</code> para leer y modificar el ref dentro de esa función. Para el tope inferior, un simple <code class="inline">if</code> dentro de la función de restar.
+    </div>
+  </section>
+
+  <!-- ACTIVIDAD 3 -->
+  <section class="act">
+    <h2><span class="n">3</span> Formulario reactivo <span class="tag-level lvl-medio">Medio</span></h2>
+    <p class="goal">🎯 Meta: <code class="inline">v-model</code>, modificadores y <code class="inline">@submit.prevent</code>.</p>
+    <p>Crea <code class="inline">FormularioSaludo.vue</code>: un input donde el usuario escribe su nombre y ves el resultado en vivo.</p>
+    <h3>Requisitos</h3>
+    <ul class="tasks">
+      <li>Un input enlazado con <code class="inline">v-model</code> a un ref <code class="inline">nombre</code>.</li>
+      <li>Debajo del input, un saludo en vivo: "Hola, {{ nombre }} 👋" que se actualiza al escribir.</li>
+      <li>Usa el modificador que elimina espacios sobrantes al inicio y fin.</li>
+      <li>Un formulario con botón "Enviar" que al enviarse <strong>NO recargue la página</strong> y muestre un <code class="inline">alert</code> con el nombre.</li>
+      <li>Si el input está vacío, muestra el texto "Escribe tu nombre para ver el saludo" en lugar del saludo.</li>
+    </ul>
+    <div class="hint">
+      <strong>💡 Pista:</strong> el modificador para limpiar espacios se pega al <code class="inline">v-model</code> con un punto. Para evitar la recarga, hay un modificador de eventos que llama a <code class="inline">preventDefault()</code> por ti. Para el mensaje vacío, combina <code class="inline">v-if</code> / <code class="inline">v-else</code> revisando la longitud del texto.
+    </div>
+    <details>
+      <summary>Ver pista extra</summary>
+      <p><code class="inline">v-model.trim="nombre"</code> · <code class="inline">@submit.prevent="miFuncion"</code> · condición del vacío: <code class="inline">v-if="nombre.length === 0"</code>.</p>
+    </details>
+  </section>
+
+  <!-- ACTIVIDAD 4 -->
+  <section class="act">
+    <h2><span class="n">4</span> Toggle de detalles: v-if vs v-show <span class="tag-level lvl-medio">Medio</span></h2>
+    <p class="goal">🎯 Meta: entender la diferencia REAL entre <code class="inline">v-if</code> y <code class="inline">v-show</code>.</p>
+    <p>Crea <code class="inline">DemoToggle.vue</code> con dos bloques de texto y un botón que los muestra/oculta.</p>
+    <h3>Requisitos</h3>
+    <ul class="tasks">
+      <li>Un ref booleano <code class="inline">visible</code> y un botón que lo alterna.</li>
+      <li>Un párrafo controlado con <code class="inline">v-if="visible"</code>.</li>
+      <li>Otro párrafo controlado con <code class="inline">v-show="visible"</code>.</li>
+      <li>Abre las DevTools (F12), inspecciona el DOM y <strong>observa qué pasa con cada uno</strong> al ocultarlos.</li>
+      <li>Escribe en un comentario dentro del componente: ¿cuál desaparece del DOM y cuál solo se oculta? ¿Cuándo usarías cada uno?</li>
+    </ul>
+    <div class="warn-box">
+      <strong>⚠️ Esta actividad no se trata de código, se trata de ENTENDER.</strong> Si no abres las DevTools y no ves la diferencia con tus propios ojos, no cumpliste la actividad. La reflexión escrita es obligatoria.
+    </div>
+  </section>
+
+  <!-- ACTIVIDAD 5 -->
+  <section class="act">
+    <h2><span class="n">5</span> Lista de productos con <code class="inline">v-for</code> <span class="tag-level lvl-medio">Medio</span></h2>
+    <p class="goal">🎯 Meta: renderizar listas con <code class="inline">v-for</code>, <code class="inline">:key</code> y alias de índice.</p>
+    <p>Crea <code class="inline">ListaProductos.vue</code> que muestre un catálogo a partir de un arreglo.</p>
+    <h3>Requisitos</h3>
+    <ul class="tasks">
+      <li>Un ref <code class="inline">productos</code> = arreglo de al menos 4 objetos con <code class="inline">id</code>, <code class="inline">nombre</code> y <code class="inline">precio</code>.</li>
+      <li>Renderiza la lista con <code class="inline">v-for</code>, mostrando <strong>índice + nombre + precio</strong>.</li>
+      <li>Usa <code class="inline">:key</code> correctamente (piensa qué valor va ahí).</li>
+      <li>Si un producto cuesta más de $10.000, muestra una etiqueta "⭐ Premium" al lado (con <code class="inline">v-if</code>).</li>
+      <li>Agrega un mensaje de <em>empty state</em> ("No hay productos") que aparezca si el arreglo está vacío. Pruébalo vaciando el arreglo.</li>
+    </ul>
+    <div class="hint">
+      <strong>💡 Pista:</strong> el <code class="inline">:key</code> debe ser único por elemento — el <code class="inline">id</code> es el candidato perfecto, NO uses el índice. Para el índice como alias: <code class="inline">v-for="(prod, i) in productos"</code>. El empty state se resuelve mirando <code class="inline">productos.length</code>.
+    </div>
+    <details>
+      <summary>Ver pista extra</summary>
+      <p>Estructura: <code class="inline">&lt;li v-for="(prod, i) in productos" :key="prod.id"&gt;</code>. La etiqueta premium: <code class="inline">&lt;span v-if="prod.precio &gt; 10000"&gt;⭐ Premium&lt;/span&gt;</code>. Empty state: un <code class="inline">v-if="productos.length === 0"</code> arriba de la lista.</p>
+    </details>
+  </section>
+
+  <!-- ACTIVIDAD 6 -->
+  <section class="act">
+    <h2><span class="n">6</span> Ficha dinámica desde un objeto <span class="tag-level lvl-reto">Reto</span></h2>
+    <p class="goal">🎯 Meta: iterar las propiedades de un objeto con <code class="inline">v-for</code> (clave + valor).</p>
+    <p>Crea <code class="inline">FichaObjeto.vue</code> que reciba un objeto y liste TODAS sus propiedades automáticamente, sin escribirlas a mano.</p>
+    <h3>Requisitos</h3>
+    <ul class="tasks">
+      <li>Un ref <code class="inline">personaje</code> = objeto con al menos 5 propiedades (ej: nombre, raza, poder, planeta, nivel).</li>
+      <li>Recorre el objeto con <code class="inline">v-for</code> mostrando "clave: valor" por cada propiedad.</li>
+      <li>El desafío: si mañana agregas una propiedad más al objeto, la ficha debe mostrarla <strong>sin tocar el template</strong>.</li>
+    </ul>
+    <div class="hint">
+      <strong>💡 Pista:</strong> <code class="inline">v-for</code> puede recorrer objetos y te da acceso a <code class="inline">(valor, clave)</code> en ese orden — ¡ojo con el orden, no es al revés! Igual necesitas un <code class="inline">:key</code>. ¿Qué valor único tienes en cada iteración de un objeto?
+    </div>
+  </section>
+
+  <!-- INTEGRADORA -->
+  <section class="act final">
+    <h2><span class="n star">★</span> Actividad Integradora: Mini gestor de tareas <span class="tag-level lvl-reto">Integradora</span></h2>
+    <p class="goal">🎯 Meta: aplicar TODO lo de la lección en una sola pieza funcional — como una feature real.</p>
+    <p>Crea <code class="inline">GestorTareas.vue</code>. Es tu proyecto final de la lección: un administrador de tareas donde el usuario agrega, completa y elimina tareas. Acá se junta todo lo que practicaste.</p>
+
+    <h3>Funcionalidades obligatorias</h3>
+    <ul class="tasks">
+      <li><strong>Agregar tarea:</strong> un input + botón (o formulario con <code class="inline">@submit.prevent</code>) que agrega una tarea nueva al arreglo. Usa <code class="inline">v-model</code> con el modificador de limpieza de espacios.</li>
+      <li><strong>Validación:</strong> si el input está vacío, no se agrega nada.</li>
+      <li><strong>Listar tareas:</strong> muéstralas con <code class="inline">v-for</code> y <code class="inline">:key</code> correcto. Cada tarea es un objeto con <code class="inline">id</code>, <code class="inline">texto</code> y <code class="inline">completada</code>.</li>
+      <li><strong>Completar tarea:</strong> al hacer clic en una tarea, se marca como completada (y visualmente se ve distinta: tachada, otro color, etc. — usa enlace dinámico de clase o estilo).</li>
+      <li><strong>Eliminar tarea:</strong> un botón ✕ en cada tarea que la quita de la lista.</li>
+      <li><strong>Empty state:</strong> si no hay tareas, muestra un mensaje amigable con <code class="inline">v-if</code>/<code class="inline">v-else</code>.</li>
+      <li><strong>Contador en vivo:</strong> muestra "Tareas pendientes: N" calculado en el template a partir del arreglo.</li>
+    </ul>
+
+    <h3>Retos opcionales (para el que quiere destacar) 🚀</h3>
+    <ul class="tasks">
+      <li>Un botón que use <code class="inline">v-show</code> para ocultar/mostrar las tareas ya completadas.</li>
+      <li>Un mensaje "¡Todo listo! 🎉" que aparezca solo cuando no quedan tareas pendientes.</li>
+      <li>Mostrar la fecha/hora en que se creó cada tarea.</li>
+    </ul>
+
+    <div class="hint">
+      <strong>💡 Pistas de arquitectura (no la solución):</strong>
+      <ul style="margin:8px 0 0">
+        <li>El estado principal es un <code class="inline">ref</code> con un <strong>arreglo de objetos</strong>. Para agregar: <code class="inline">tareas.value.push(...)</code>. Para eliminar: piensa en <code class="inline">.filter()</code>.</li>
+        <li>Necesitas una variable para generar <code class="inline">id</code> únicos (un contador que solo sube). No uses el índice como id.</li>
+        <li>Para "completar", pasa la tarea (o su id) a una función que invierta su propiedad <code class="inline">completada</code>.</li>
+        <li>El estilo dinámico de la tarea completada se hace enlazando <code class="inline">:class</code> o <code class="inline">:style</code> a una condición.</li>
+        <li>El contador de pendientes: una expresión con <code class="inline">.filter()</code> directamente en el <code class="inline">{{ }}</code>.</li>
+      </ul>
+    </div>
+
+    <div class="warn-box">
+      <strong>⚠️ No busques "todo app vue" en Google y copies.</strong> Vas a encontrar 500 tutoriales resueltos. Si copias, te engañas a ti mismo. El músculo se hace levantando el peso, no mirando cómo otro lo levanta. Pelea con el problema primero.
+    </div>
+
+    <div class="check">
+      <h4>✅ Checklist antes de entregar</h4>
+      <ul>
+        <li>Todos los componentes usan <code class="inline">&lt;script setup&gt;</code> (Composition API).</li>
+        <li>No hay ningún <code class="inline">.value</code> escrito dentro del <code class="inline">&lt;template&gt;</code>.</li>
+        <li>Cada <code class="inline">v-for</code> tiene su <code class="inline">:key</code> único (y NO es el índice).</li>
+        <li>El código no tiene <code class="inline">console.log</code> ni comentarios de basura olvidados.</li>
+        <li>Probaste todos los casos: agregar, completar, eliminar, lista vacía.</li>
+        <li>Nombres de variables y funciones claros y en español o inglés consistente.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- EVALUACIÓN -->
+  <section class="act">
+    <h2><span class="n">📊</span> ¿Cómo se evalúa?</h2>
+    <table class="criteria">
+      <tr><th>Criterio</th><th>Qué se espera</th><th>Peso</th></tr>
+      <tr><td>Funcionalidad</td><td>Todo funciona como se pide, sin errores en consola</td><td>40%</td></tr>
+      <tr><td>Uso correcto de directivas</td><td><code class="inline">v-for</code>+<code class="inline">:key</code>, <code class="inline">v-if/v-show</code>, <code class="inline">v-model</code>, <code class="inline">v-bind</code>, <code class="inline">@</code> bien aplicados</td><td>30%</td></tr>
+      <tr><td>Composition API</td><td><code class="inline">&lt;script setup&gt;</code>, <code class="inline">ref</code> y <code class="inline">.value</code> usados correctamente</td><td>20%</td></tr>
+      <tr><td>Prolijidad</td><td>Código limpio, nombres claros, sin restos de debug</td><td>10%</td></tr>
+    </table>
+    <h3>📦 Entrega</h3>
+    <ul class="tasks">
+      <li>Sube tu proyecto a un repositorio Git (sin la carpeta <code class="inline">node_modules</code>).</li>
+      <li>En el README, lista qué actividades completaste y cuáles retos opcionales lograste.</li>
+      <li>Anota una reflexión corta: ¿qué concepto te costó más y por qué?</li>
+    </ul>
+  </section>
+
+  <footer>
+    <p><strong>Lección 2 · Módulo 6</strong> — Actividad de Templates y Rendering (Composition API)</p>
+    <p>Recuerda: <em>los conceptos van primero, el código después. Si no entiendes el porqué, no sirve el cómo.</em> 💪</p>
+  </footer>
+</div>
+</body>
+</html>
